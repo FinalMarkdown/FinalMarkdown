@@ -1,0 +1,34 @@
+body,html,div,th,tr,td,table,form,input,textarea{
+    margin: 0;
+}
+
+table{
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.mdWrap.hidePreview .mdInput, .mdWrap.hideEditor .mdOutput{
+    width: 99vw;
+}
+
+.mdWrap.hidePreview .mdOutput, .mdWrap.hideEditor .mdInput{
+    display: none;
+}
+
+.mdInput{
+    display: block;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 49vw;
+    height: 100vh;
+}
+.mdOutput{
+    display: block;
+    position: fixed;
+    overflow: scroll;
+    right: 0;
+    top: 0;
+    width: 49vw;
+    height: 100vh;
+}
