@@ -1,6 +1,6 @@
 {
   "name": "Final Markdown",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A simple cross-platform markdown editor written in node.js",
   "main": "index.html",
   "scripts": {

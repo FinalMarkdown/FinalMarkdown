@@ -1,9 +1,10 @@
 var fs = require('fs');
 var path = require('path');
 var gui = require('nw.gui');
+var pack = require('./package.json');
 var fdialogs = require('node-webkit-fdialogs');
-//TODO: GET FROM package.json
-var APP_VERSION = "0.2.0";
+
+var APP_VERSION = pack.version;
 
 var MainApp = function(){
 

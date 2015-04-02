@@ -1,8 +1,7 @@
 APP_PATH="../build/Final Markdown.app"
 
-rm -rf "${APP_PATH}Contents/Resources/app.nw"
-cp -r "./" "${APP_PATH}/Contents/Resources/app.nw"
-rm "${APP_PATH}/Contents/Resources/app.nw/run.sh"
+rm -rf "${APP_PATH}/Contents/Resources/app.nw"
+cp -r "./src" "${APP_PATH}/Contents/Resources/app.nw"
 
 #compile javascript
 #cd js
