@@ -12,11 +12,17 @@
     <script src="js/vendor/showdown/github.js"></script>
     <script src="js/vendor/ace/ace.js"></script>
     <script src="js/finalMarkdownWindow.js"></script>
+    <base href="">
 </head>
 <body>
     <div class="mdWrap">
-        <div class="mdInput" spellcheck="true"></div>
-        <div class="mdOutput markdown-body" spellcheck="true"></div>
+        <div class="mdInput"></div>
+        <div class="mdOutput markdown-body"></div>
+    </div>
+    <div id="find-popup" class="hidden">
+        <form id="find-form">
+        Search: <input type="text" id="find-text"> <input type="submit" value="Find / Next">
+        </form>
     </div>
     <script>
         new FinalMarkdown();

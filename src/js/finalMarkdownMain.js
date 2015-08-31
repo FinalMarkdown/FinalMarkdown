@@ -23,6 +23,7 @@ var MainApp = function(){
 
     var self = this;
     var win = gui.Window.get();
+    var loadingDots;
 
     //FOR DEBUGGING
     // win.showDevTools();
@@ -44,6 +45,11 @@ var MainApp = function(){
             fileSubMenu.append(new gui.MenuItem({ label: 'Open',click:self.openClick,key:"o",modifiers:'cmd' }));
             fileSubMenu.append(new gui.MenuItem({ label: 'Save',click:self.saveClick,key:"s",modifiers:'cmd' }));
             fileSubMenu.append(new gui.MenuItem({ label: 'Save a copy',key:"s",click:self.saveCopyClick,modifiers:'cmd-shift' }));
+
+            var findSubMenu = new gui.Menu();
+            findSubMenu.append(new gui.MenuItem({ label: 'Find...',click:self.toggleFind,key:"f",modifiers:'cmd' }));
+            findSubMenu.append(new gui.MenuItem({ label: 'Find Next',click:self.findNext,key:"g",modifiers:'cmd' }));
+            findSubMenu.append(new gui.MenuItem({ label: 'Find Previous',click:self.findPrevious,key:"g",modifiers:'cmd-shift' }));
 
             var formatSubMenu = new gui.Menu();
             formatSubMenu.append(new gui.MenuItem({ label: 'Bold',click:function(){ self.formatTextClick('bold'); },key:"b",modifiers:'cmd' }));
@@ -70,14 +76,13 @@ var MainApp = function(){
             viewSubMenu.append(new gui.MenuItem({ label: 'Zoom Out',click:function(){ self.zoomClick(-1); },key:"-",modifiers:'cmd' }));
             viewSubMenu.append(new gui.MenuItem({ label: 'Reset Zoom',click:function(){ self.zoomClick(0); },key:"0",modifiers:'cmd' }));
 
-
-
             //add preferences menu and divider
             // mb.items[0].submenu.insert(new gui.MenuItem({ label: 'Preferences',click:function(){ alert('ok'); }}),1);
             // mb.items[0].submenu.insert(new gui.MenuItem({ type: 'separator' }),1);
 
             mb.insert(new gui.MenuItem({ label:'File', submenu: fileSubMenu}),1);
             mb.insert(new gui.MenuItem({ label:'Format', submenu: formatSubMenu}),3);
+            mb.insert(new gui.MenuItem({ label:'Find', submenu: findSubMenu}),3);
             mb.insert(new gui.MenuItem({ label:'View', submenu: viewSubMenu}),3);
 
             if(!self.isRegistered()){
@@ -99,7 +104,6 @@ var MainApp = function(){
             win.menu = mb;
         break;
 
-
         case 'win32': //Windows
         break;
 
@@ -107,7 +111,6 @@ var MainApp = function(){
         break;
     }
 
-    var loadingDots;
     function startLoading(){
         //TODO: maybe do some actual loading here?
         loadingDots = document.querySelector('#loadingDots');
@@ -116,7 +119,7 @@ var MainApp = function(){
         var regText = self.isRegistered() ? "(Registered &mdash; You're awesome!)" : "(UNREGISTERED)";
         loadingVersion.innerHTML= "v" + APP_VERSION + "<i>" + regText + "</i>";
 
-        setTimeout(checkLoading,400);
+        setTimeout(checkLoading,200);
     }
 
     function checkLoading(){
@@ -209,7 +212,6 @@ MainApp.prototype.doOpenFile = function(content,path){
 }
 
 MainApp.prototype.newClick = function(){
-    console.log('yup loaded new click');
     this.windowsLoading++;
     var options = {
         "toolbar": false,
@@ -223,7 +225,6 @@ MainApp.prototype.newClick = function(){
         options.y = global.focused.win.y+20;
     }
     var win2 = gui.Window.get(gui.Window.open('FinalMarkdown.html',options));
-    console.log('yup loaded new click END');
     // global.windows.push(win2);
 };
 
@@ -249,7 +250,6 @@ MainApp.prototype.viewClick = function(action){
 }
 
 MainApp.prototype.zoomClick = function(zoom){
-    console.log('first zoom',zoom,global.focused);
     if(global.focused && global.focused.zoomClick) return global.focused.zoomClick(zoom);
 }
 
@@ -273,6 +273,18 @@ MainApp.prototype.register = function(code){
         global.localStorage.registrationCode=false;
         return false;
     }
+}
+
+MainApp.prototype.toggleFind = function() {
+    if(global.focused && global.focused.toggleFind) return global.focused.toggleFind();
+}
+
+MainApp.prototype.findNext = function() {
+    if(global.focused && global.focused.findNext) return global.focused.findNext();
+}
+
+MainApp.prototype.findPrevious = function() {
+    if(global.focused && global.focused.findPrevious) return global.focused.findPrevious();
 }
 
 

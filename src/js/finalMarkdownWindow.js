@@ -10,6 +10,7 @@ var FinalMarkdown = function(){
     this.oldLength=0;
     this.livePreview=true;
 
+    //FOR DEBUGGING
     // this.win.showDevTools();
 
     var self = this;
@@ -17,6 +18,9 @@ var FinalMarkdown = function(){
     var getThisPartyStarted = function(event){
         self.input = document.querySelector('.mdInput');
         self.output = document.querySelector('.mdOutput');
+        self.findBox = document.querySelector('#find-popup');
+        self.findText = document.querySelector('#find-text');
+        self.findForm = document.querySelector('#find-form');
 
         self.editor = ace.edit(self.input);
         self.editor.setTheme("ace/theme/github");
@@ -24,6 +28,7 @@ var FinalMarkdown = function(){
         self.editor.$blockScrolling = Infinity;
         self.editor.setOption("wrap", 'free');
         self.editor.renderer.setShowGutter(false);
+        self.editor.commands.removeCommand('find');
 
         window.ondragover = function(e) {
             e.preventDefault();
@@ -68,13 +73,18 @@ var FinalMarkdown = function(){
         });
 
         document.addEventListener('keypress',function(e){
-            if(!e.target.classList.contains('ace_text-input')){
+            if(e.target.id !== 'find-text' && !e.target.classList.contains('ace_text-input')){
                 self.editor.focus();
             }
-
         });
 
-
+        document.addEventListener('keyup',function(e){
+            switch(e.which){
+                case 27:
+                    self.toggleFind(true);
+                break;
+            }
+        });
 
         //sync editor scroll to output position
         self.output.addEventListener('scroll',function(e){
@@ -151,8 +161,8 @@ var FinalMarkdown = function(){
                     e.preventDefault();
                     self.wrapSelection("*","*",'',false);
                     break;
-                default:
-                    console.log(e.which);
+                // default:
+                //     console.log(e.which);
             }
         });
 
@@ -197,6 +207,11 @@ var FinalMarkdown = function(){
                     break;
 
             }
+        });
+
+        self.findForm.addEventListener('submit',function(e){
+            e.preventDefault();
+            self.findNext();
         });
 
         self.processMd();
@@ -246,14 +261,19 @@ FinalMarkdown.prototype.initWindow = function(){
 
 FinalMarkdown.prototype.processMd = function(){
     if(!this.livePreview) return;
+
+    //parse markdown into html
     var converter = new Showdown.converter({ extensions: ['table','github'] });
     var editorText = this.editor.getSession().getValue();
     this.output.innerHTML = converter.makeHtml(editorText);
+
+    //process code blocks
     var codeBlocks = this.output.querySelectorAll('pre');
     for(var i = 0; i < codeBlocks.length; i++){
         hljs.highlightBlock(codeBlocks[i]);
     }
 
+    //make links open in external window
     var links = this.output.querySelectorAll('a');
     for(var i = 0; i < links.length; i++){
         links[i].addEventListener('click',function(e){
@@ -263,6 +283,7 @@ FinalMarkdown.prototype.processMd = function(){
             }
         });
     }
+
     //Final Countdown on Kazookeylele easter egg
     if(editorText==="We're heading for Venus"){
         gui.Shell.openExternal('https://www.youtube.com/watch?v=XAg5KjnAhuU');
@@ -365,18 +386,15 @@ FinalMarkdown.prototype.formatTextClick = function(action){
 FinalMarkdown.prototype.wrapSelection = function(beforeText, afterText, defaultText, cursorOffset){
     var selection = this.editor.getSelectionRange();
     var selectText = this.editor.getSession().getTextRange(selection);
-    console.log(selection);
 
     if(cursorOffset === false){
         //leave text highlighted
-        console.log('offset = false')
         selection.end.column+=afterText.length;
         this.editor.getSession().insert(selection.start,beforeText)
         this.editor.getSession().insert(selection.end,afterText)
         selection.start.column+=1;
         this.editor.getSession().getSelection().setSelectionRange(selection);
     }else{
-        console.log('offset NOT false')
         if(selectText.length < 1){
             if(!defaultText) cursorOffset = -afterText.length;
             selectText = defaultText || '';
@@ -418,42 +436,47 @@ FinalMarkdown.prototype.zoomClick = function(zoom){
 };
 
 FinalMarkdown.prototype.headerClick = function(level){
-
     var selection = this.editor.getSelectionRange();
     var lineText = this.editor.getSession().getLine(selection.start.row).trim();
     var newPrefix = Array(level+1).join('#');
     var currentPrefix = lineText.match(/^#+/);
     var Range = ace.require('ace/range').Range;
     var range = new Range(selection.start.row,0,selection.start.row,lineText.length);
-
-    // console.log('newPrefix',newPrefix,currentPrefix.toString(),range);
-
     var newText = lineText.replace(/^#+/,'');
     if(currentPrefix != newPrefix) newText = newPrefix + newText;
     this.editor.getSession().replace(range,newText);
-
-
-    // var selection = this.editor.getSelectionRange();
-    // var selectText = this.editor.getSession().getTextRange(selection);
-    // var moveCursor = 0;
-    // if(selectText.length < 1){
-    //     if(formatActions[action][2]){
-    //         selectText=formatActions[action][2];
-    //     }
-    //     moveCursor = formatActions[action][1].length;
-    // }
-    // if(formatActions[action][3]){
-    //     moveCursor = formatActions[action][3];
-    // }
-
-    // this.editor.getSession().replace(selection,formatActions[action][0]+selectText+formatActions[action][1]);
-    // this.editor.getSession().getSelection().moveCursorBy(0,-moveCursor);
 };
 
 FinalMarkdown.prototype.updateTitle = function(){
     var openFile = this.currentPath ? path.basename(this.currentPath) : 'Untitled';
     var modified = this.modified ? '*' : '';
     this.win.title="Final Markdown - "+openFile+' '+modified;
+    //set base href for this document (allows loading local images)
+    var baseTag = document.querySelector('base');
+    baseTag.href = 'file:///' + path.dirname(this.currentPath) + '/';
 };
 
+
+FinalMarkdown.prototype.toggleFind = function(hide) {
+    if(!hide && this.findBox.classList.contains('hidden')){
+        this.findBox.classList.remove('hidden');
+        this.findText.focus();
+        this.findText.setSelectionRange(0, this.findText.value.length);
+    }else{
+        this.findBox.classList.add('hidden');
+        this.editor.focus();
+    }
+}
+
+FinalMarkdown.prototype.findNext = function() {
+    var searchTerm = this.findText.value;
+    this.editor.find(searchTerm,{
+        backwards:false,
+        wrap: true
+    });
+}
+
+FinalMarkdown.prototype.findPrevious = function() {
+    this.editor.findPrevious();
+}
 

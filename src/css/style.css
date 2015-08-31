@@ -1,5 +1,6 @@
 body,html,div,th,tr,td,table,form,input,textarea{
     margin: 0;
+    font-family: helvetica;
 }
 
 table{
@@ -31,4 +32,28 @@ table{
     top: 0;
     width: 49vw;
     height: 100vh;
+}
+
+.mdInput * {
+    font: inherit!important
+}
+
+#find-popup{
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 280px;
+    height: 20px;
+    background: #DDDDDD;
+    border-left: 1px solid #444444;
+    border-bottom: 1px solid #444444;
+    border-bottom-left-radius: 10px;
+    opacity: 0.9;
+    text-align: center;
+    padding: 10px;
+}
+
+.hidden{
+    display: none !Important;
 }
