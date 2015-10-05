@@ -57,3 +57,12 @@ table{
 .hidden{
     display: none !Important;
 }
+
+/* spell checker styles */
+.ace_marker-layer .misspelled { position: absolute; z-index: -2; cursor: pointer; background: none; border-bottom: 1px solid red; margin-bottom: -1px; }
+.ace_marker-layer .misspelled:hover { border-bottom: 2px solid red; }
+.misspelled { pointer-events: auto;  border-bottom: 1px solid red; margin-bottom: -1px; }
+.suggestion-menu { border: 1px solid black; background: white; margin: 17px 0 0 0; padding: 0; list-style: none; position: absolute; z-index: 9999; }
+.suggestion-menu li { pointer-events: auto; cursor: pointer; padding: 5px; border-top: 1px solid #666666; margin: 0; }
+.suggestion-menu li:hover { background: #CCCCCC; }
+.suggestion-menu li.disabled { color: #AAAAAA;}

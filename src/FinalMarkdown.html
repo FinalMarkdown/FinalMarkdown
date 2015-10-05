@@ -6,17 +6,20 @@
     <link rel="stylesheet" href="css/github.css">
     <link rel="stylesheet" href="css/style.css">
 
+    <script src="js/vendor/zepto.js"></script>
+    <script src="js/vendor/typo.js"></script>
     <script src="js/vendor/highlight.min.js"></script>
     <script src="js/vendor/showdown/showdown.js"></script>
     <script src="js/vendor/showdown/table.js"></script>
     <script src="js/vendor/showdown/github.js"></script>
     <script src="js/vendor/ace/ace.js"></script>
+    <script src="js/vendor/ace_spellchecker.js"></script>
     <script src="js/finalMarkdownWindow.js"></script>
     <base href="">
 </head>
 <body>
     <div class="mdWrap">
-        <div class="mdInput"></div>
+        <div class="mdInput" id="editor"></div>
         <div class="mdOutput markdown-body"></div>
     </div>
     <div id="find-popup" class="hidden">

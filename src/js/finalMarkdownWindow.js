@@ -12,6 +12,7 @@ var FinalMarkdown = function(){
 
     //FOR DEBUGGING
     // this.win.showDevTools();
+    // console.dir(this.win);
 
     var self = this;
 
@@ -29,6 +30,11 @@ var FinalMarkdown = function(){
         self.editor.setOption("wrap", 'free');
         self.editor.renderer.setShowGutter(false);
         self.editor.commands.removeCommand('find');
+
+        AceSpellChecker({
+            dicPath: 'js/vendor/en_US.dic',
+            affPath: 'js/vendor/en_US.aff'
+        });
 
         window.ondragover = function(e) {
             e.preventDefault();
@@ -229,21 +235,8 @@ FinalMarkdown.prototype.initWindow = function(){
     });
 
     this.win.on('close',function(){
-        if(self.modified){
-            var doClose=confirm("This file contains unsaved changes. If you close the window the changes will be lost.")
-
-            if(doClose){
-                self.modified=false;
-                this.close(true);
-            }
-        }else{
-            this.close(true);
-        }
-    });
-
-    this.win.on('closed',function(){
-        if(global.focused==self){
-            global.focused=false;
+        if(!self.modified || confirm("This file contains unsaved changes. If you close the window the changes will be lost.")){
+            global.papa.closeWindow(self);
         }
     });
 
@@ -255,7 +248,7 @@ FinalMarkdown.prototype.initWindow = function(){
             global.openContent=false;
             self.win.focus();
         }
-        global.papa.windowLoaded();
+        global.papa.windowLoaded(self);
     });
 };
 

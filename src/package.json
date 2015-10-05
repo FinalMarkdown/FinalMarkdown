@@ -1,5 +1,5 @@
 {
-  "name": "Final Markdown",
+  "name": "FinalMarkdown",
   "version": "0.2.1",
   "description": "A simple cross-platform markdown editor written in node.js",
   "main": "index.html",
@@ -7,12 +7,17 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Lenny Urbanowski",
+  "shh":"Taco Party!!!!!",
   "license": "MIT",
   "window": {
     "toolbar": false,
-    "frame":false,
+    "frame": false,
     "width": 500,
     "height": 540,
-    "transparent":true
+    "transparent": true
+  },
+  "dependencies": {
+    "jsonwebtoken": "^5.4.0",
+    "uuid-v4": "^0.1.0"
   }
 }

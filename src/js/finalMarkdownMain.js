@@ -3,26 +3,34 @@ var path = require('path');
 var gui = require('nw.gui');
 var pack = require('./package.json');
 var fdialogs = require('node-webkit-fdialogs');
+var uuid = require('uuid-v4');
+var jwt = require('jsonwebtoken');
 
 var APP_VERSION = pack.version;
 
 var MainApp = function(){
+
+    //unregister on load for testing
+    // window.localStorage.registrationCode=false;
 
     global.focused=this;
     global.openPath=false;
     global.openContent=false;
     global.papa = this;
     global.localStorage = window.localStorage || {};
-    // global.windows=[];
+
+    global.windows=[];
     if(!global.localStorage.saves) global.localStorage.saves=0;
 
     this.fileOpenQueue=[];
     this.windowsLoading = 0;
     this.blockQueue=false;
-    this.donateUrl = "http://finalmarkdown.github.io/"
+    if(!global.localStorage.uuid) global.localStorage.uuid = uuid();
+    this.donateUrl = "http://finalmarkdown.github.io/register.html?r="+global.localStorage.uuid;
 
     var self = this;
     var win = gui.Window.get();
+    this.win = win;
     var loadingDots;
 
     //FOR DEBUGGING
@@ -31,6 +39,12 @@ var MainApp = function(){
 
     win.title="Final Markdown";
     win.setShowInTaskbar(true);
+
+    gui.App.on('reopen', function(){
+        if(global.windows.length < 1){
+           self.newClick();
+        }
+    })
 
     //build menu for mac
     switch(process.platform){
@@ -89,16 +103,19 @@ var MainApp = function(){
                 var regSubMenu = new gui.Menu();
                 regSubMenu.append(new gui.MenuItem({ label: 'UNREGISTERED COPY' }));
                 regSubMenu.append(new gui.MenuItem({ type: 'separator' }));
-                regSubMenu.append(new gui.MenuItem({ label: 'Donate (get code)',click:function(){ gui.Shell.openExternal(global.papa.donateUrl); } }));
+                regSubMenu.append(new gui.MenuItem({ label: "Register",click:function(){ gui.Shell.openExternal(global.papa.donateUrl); } }));
                 regSubMenu.append(new gui.MenuItem({ label: 'Enter Code',click:function(){
                     var enteredCode = prompt("Enter registration code (get a code by donating using the donate menu item):")
-                    if(self.register(enteredCode)){
-                        alert('Thank you for your donation.')
+                    if(!enteredCode){
+                        //Do Nothing -- They hit cancel or left the text blank.
+                    }else if(self.register(enteredCode)){
+                        alert('Thank you for registering.')
                     }else{
                         alert('Invalid registration code.')
                     }
                 } }));
                 mb.insert(new gui.MenuItem({ label:'REGISTER', submenu: regSubMenu}),6);
+                self.regSubMenu = regSubMenu;
             }
 
             win.menu = mb;
@@ -135,8 +152,7 @@ var MainApp = function(){
     function finishLoading(){
 
         win.hide();
-        //hack because dialogs open from splash
-        //TODO: figure out why and fix it
+
         win.width=0;
         win.height=0;
 
@@ -166,10 +182,24 @@ var MainApp = function(){
 };
 
 
-MainApp.prototype.windowLoaded = function(){
+MainApp.prototype.windowLoaded = function(win){
     this.windowsLoading--;
     this.blockQueue=false;
     this.runFileQueue();
+    global.windows.push(win);
+}
+
+MainApp.prototype.closeWindow = function(win){
+    global.windows = global.windows.filter(function(item){
+        return item.win.id !== win.win.id;
+    });
+    win.modified = false;
+    win.win.close(true);
+    if(global.windows.length > 0){
+        global.windows[0].win.focus();
+    }else{
+        global.focused = false;
+    }
 }
 
 MainApp.prototype.addFileToQueue = function(file){
@@ -225,7 +255,6 @@ MainApp.prototype.newClick = function(){
         options.y = global.focused.win.y+20;
     }
     var win2 = gui.Window.get(gui.Window.open('FinalMarkdown.html',options));
-    // global.windows.push(win2);
 };
 
 MainApp.prototype.saveClick = function(){
@@ -258,16 +287,22 @@ MainApp.prototype.isRegistered = function(){
 }
 
 MainApp.prototype.checkRegistration = function(code){
-    //TODO: call to server to check code
-    return code == 'taco party';
+    try{
+        var decoded = jwt.verify(code, pack.shh);
+        //good token -- check serial
+        return decoded.serial == global.localStorage.uuid && decoded.author == 'http://www.itslennysfault.com';
+    }catch(e){
+        //invalid token
+        return false;
+    }
 }
 
 MainApp.prototype.register = function(code){
     if(this.checkRegistration(code)){
         global.localStorage.registrationCode=code;
-        //TODO: remove registration menu on registration
-        //maybe just restart the app
-        // win.menu.remove(regSubMenu);
+        if(this.regSubMenu){
+            this.win.menu.removeAt(6);
+        }
         return true;
     }else{
         global.localStorage.registrationCode=false;
@@ -286,5 +321,7 @@ MainApp.prototype.findNext = function() {
 MainApp.prototype.findPrevious = function() {
     if(global.focused && global.focused.findPrevious) return global.focused.findPrevious();
 }
+
+
 
 
