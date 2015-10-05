@@ -473,3 +473,7 @@ FinalMarkdown.prototype.findPrevious = function() {
     this.editor.findPrevious();
 }
 
+FinalMarkdown.prototype.reload = function(){
+    this.win.reloadDev();
+}
+

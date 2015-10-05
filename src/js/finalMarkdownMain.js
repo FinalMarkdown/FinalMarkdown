@@ -89,6 +89,8 @@ var MainApp = function(){
             viewSubMenu.append(new gui.MenuItem({ label: 'Zoom In',click:function(){ self.zoomClick(1); },key:"+",modifiers:'cmd' }));
             viewSubMenu.append(new gui.MenuItem({ label: 'Zoom Out',click:function(){ self.zoomClick(-1); },key:"-",modifiers:'cmd' }));
             viewSubMenu.append(new gui.MenuItem({ label: 'Reset Zoom',click:function(){ self.zoomClick(0); },key:"0",modifiers:'cmd' }));
+            // viewSubMenu.append(new gui.MenuItem({ type: 'separator' }));
+            // viewSubMenu.append(new gui.MenuItem({ label: 'Reload View',click:function(){ self.reload(); },key:"r",modifiers:'cmd' }));
 
             //add preferences menu and divider
             // mb.items[0].submenu.insert(new gui.MenuItem({ label: 'Preferences',click:function(){ alert('ok'); }}),1);
@@ -114,6 +116,7 @@ var MainApp = function(){
                         alert('Invalid registration code.')
                     }
                 } }));
+
                 mb.insert(new gui.MenuItem({ label:'REGISTER', submenu: regSubMenu}),6);
                 self.regSubMenu = regSubMenu;
             }
@@ -320,6 +323,10 @@ MainApp.prototype.findNext = function() {
 
 MainApp.prototype.findPrevious = function() {
     if(global.focused && global.focused.findPrevious) return global.focused.findPrevious();
+}
+
+MainApp.prototype.reload = function() {
+    if(global.focused && global.focused.reload) global.focused.reload();
 }
 
 
