@@ -190,6 +190,7 @@ MainApp.prototype.windowLoaded = function(win){
     this.blockQueue=false;
     this.runFileQueue();
     global.windows.push(win);
+    win.win.focus();
 }
 
 MainApp.prototype.closeWindow = function(win){
