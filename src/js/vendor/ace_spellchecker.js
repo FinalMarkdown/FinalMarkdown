@@ -142,10 +142,10 @@ function AceSpellChecker(options){
 
       var word = current_errors[idx];
       var obj = $(this);
-      setTimeout(function(){
-        var suggestions = dictionary.suggest(word.word);
-        showSuggestions(obj, suggestions);
-      },0);
+      //ignore long words because they are too slow
+      var suggestions = word.word.length > 16 ? [] : dictionary.suggest(word.word);
+      showSuggestions(obj, suggestions);
+
     });
     setInterval(spell_check, 1000);
   }
