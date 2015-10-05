@@ -24,14 +24,14 @@ function AceSpellChecker(options){
 
   // Check the spelling of a line, and return [start, end]-pairs for misspelled words.
   function misspelled(line) {
-    var words = line.split(' ');
+    var words = line.split(/[ -]/); // formerly: ' '
     var i = 0;
     var bads = [];
     for (word in words) {
       var x = words[word] + "";
       var checkWord = x.replace(/[^a-zA-Z']/g, '');
       if (!dictionary.check(checkWord)) {
-        bads.push([i, i + words[word].length, words[word]]);
+        bads.push([i, i + checkWord.length, checkWord]);
       }
       i += words[word].length + 1;
     }
