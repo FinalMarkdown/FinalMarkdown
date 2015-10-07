@@ -492,7 +492,9 @@ Typo.prototype = {
 
   check : function (aWord) {
     // Remove leading and trailing whitespace
-    var trimmedWord = aWord.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+    // not needed because ace_spellchecker splits on whitespace
+    var trimmedWord = aWord.replace(/^[\s\u00A0]+|[\s\u00A0]+$/g,'');
+    //.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 
     if (this.checkExact(trimmedWord)) {
       return true;

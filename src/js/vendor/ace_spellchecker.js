@@ -1,5 +1,9 @@
 // You also need to load in typo.js and jquery / zepto
 
+//TODO:
+// - ignore links
+// - ignore inline code
+
 // You should configure these classes.
 function AceSpellChecker(options){
   options = options || {};
@@ -24,16 +28,18 @@ function AceSpellChecker(options){
 
   // Check the spelling of a line, and return [start, end]-pairs for misspelled words.
   function misspelled(line) {
-    var words = line.split(/[ -]/); // formerly: ' '
+    var words = line.split(/[^a-z']/ig); // formerly: /[ \-,;]/); // formerly: ' '
+    // console.log(words);
     var i = 0;
     var bads = [];
-    for (word in words) {
-      var x = words[word] + "";
-      var checkWord = x.replace(/[^a-zA-Z']/g, '');
-      if (!dictionary.check(checkWord)) {
-        bads.push([i, i + checkWord.length, checkWord]);
+    for(var idx = 0; idx < words.length; idx++) {
+      var wordStr = words[idx] + "";
+      // var checkWord = wordStr.replace(/[^a-z']/ig, '');
+      // console.log('word',wordStr);
+      if (wordStr.length > 0 && !dictionary.check(wordStr)) {
+        bads.push([i, i + wordStr.length, wordStr]);
       }
-      i += words[word].length + 1;
+      i += wordStr.length + 1;
     }
     return bads;
   }
@@ -87,9 +93,9 @@ function AceSpellChecker(options){
         if (misspellings.length > 0) {
           session.addGutterDecoration(i, "misspelled");
         }
-        for (var j in misspellings) {
+        for (var j = 0; j < misspellings.length; j++) {
           var range = new Range(i, misspellings[j][0], i, misspellings[j][1]);
-          markers_present.push(session.addMarker(range, "misspelled", "typo", true));
+          markers_present.push(session.addMarker(range, "misspelled misspelled-"+current_errors.length, "typo", true));
           current_errors.push({word:misspellings[j][2],range:range});
         }
       }
@@ -99,13 +105,13 @@ function AceSpellChecker(options){
     }
   }
 
-  function showSuggestions(target, words) {
+  function showSuggestions(target,idx,words) {
     $('.suggestion-menu').remove();
     if(!target || !words) return;
     var myList = $('<ul class="suggestion-menu">');
     if(words.length > 0){
       words.forEach(function(word){
-        myList.append('<li data-error="'+target.index()+'" class="suggestion-item">' + word + '</li>');
+        myList.append('<li data-error="'+idx+'" class="suggestion-item">' + word + '</li>');
       });
     }else{
       myList.append('<li class="disabled">No&nbsp;suggestions</li>');
@@ -137,14 +143,15 @@ function AceSpellChecker(options){
       if(!e.ctrlKey && e.which !== 3) return;
       e.preventDefault();
       e.stopPropagation();
-      var idx = $(this).index();
+      var idx = parseInt($(this).attr('class').split('-').pop());
       if(idx >= current_errors.length) return;
 
       var word = current_errors[idx];
       var obj = $(this);
       //ignore long words because they are too slow
-      var suggestions = word.word.length > 16 ? [] : dictionary.suggest(word.word);
-      showSuggestions(obj, suggestions);
+      var suggestions = word.word.length > 16 ? [] : dictionary.suggest(word.word).slice();
+      suggestions.unshift('|'+word.word+','+idx+'|');
+      showSuggestions(obj, idx, suggestions);
 
     });
     setInterval(spell_check, 1000);
