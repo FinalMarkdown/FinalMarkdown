@@ -1,0 +1,68 @@
+body,html,div,th,tr,td,table,form,input,textarea{
+    margin: 0;
+    font-family: helvetica;
+}
+
+table{
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.mdWrap.hidePreview .mdInput, .mdWrap.hideEditor .mdOutput{
+    width: 99vw;
+}
+
+.mdWrap.hidePreview .mdOutput, .mdWrap.hideEditor .mdInput{
+    display: none;
+}
+
+.mdInput{
+    display: block;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 49vw;
+    height: 100vh;
+}
+.mdOutput{
+    display: block;
+    position: fixed;
+    overflow: scroll;
+    right: 0;
+    top: 0;
+    width: 49vw;
+    height: 100vh;
+}
+
+.mdInput * {
+    font: inherit!important
+}
+
+#find-popup{
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 280px;
+    height: 20px;
+    background: #DDDDDD;
+    border-left: 1px solid #444444;
+    border-bottom: 1px solid #444444;
+    border-bottom-left-radius: 10px;
+    opacity: 0.9;
+    text-align: center;
+    padding: 10px;
+}
+
+.hidden{
+    display: none !Important;
+}
+
+/* spell checker styles */
+.ace_marker-layer .misspelled { position: absolute; z-index: -2; background: none; border-bottom: 1px solid red; margin-bottom: -1px; }
+.ace_marker-layer .misspelled:hover { border-bottom: 2px solid red; }
+.misspelled { pointer-events: auto;  border-bottom: 1px solid red; margin-bottom: -1px; }
+.suggestion-menu { border: 1px solid black; background: white; margin: 17px 0 0 0; padding: 0; list-style: none; position: absolute; z-index: 9999; }
+.suggestion-menu li { pointer-events: auto; cursor: pointer; padding: 5px; border-top: 1px solid #666666; margin: 0; }
+.suggestion-menu li:hover { background: #CCCCCC; }
+.suggestion-menu li.disabled { color: #AAAAAA;}
