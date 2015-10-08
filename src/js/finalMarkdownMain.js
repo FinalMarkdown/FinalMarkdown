@@ -80,11 +80,10 @@ var MainApp = function(){
             formatSubMenu.append(new gui.MenuItem({ label: 'Header 4',click:function(){ self.headerClick(4); },key:"4",modifiers:'cmd' }));
             formatSubMenu.append(new gui.MenuItem({ label: 'Header 5',click:function(){ self.headerClick(5); },key:"5",modifiers:'cmd' }));
 
-
             var viewSubMenu = new gui.Menu();
             viewSubMenu.append(new gui.MenuItem({ label: 'Toggle Preview',click:function(){ self.viewClick('preview'); },key:"p",modifiers:'cmd' }));
             viewSubMenu.append(new gui.MenuItem({ label: 'Toggle Editor',click:function(){ self.viewClick('editor'); },key:"p",modifiers:'shift-cmd' }));
-            viewSubMenu.append(new gui.MenuItem({ label: 'Presentation Mode',click:function(){ self.viewClick('presentation'); },key:"f",modifiers:'shift-cmd' }));
+            viewSubMenu.append(new gui.MenuItem({ label: 'Presentation Mode',click:function(){ self.viewClick('presentation'); },key:String.fromCharCode(13),modifiers:'cmd' }));
             viewSubMenu.append(new gui.MenuItem({ type: 'separator' }));
             viewSubMenu.append(new gui.MenuItem({ label: 'Zoom In',click:function(){ self.zoomClick(1); },key:"+",modifiers:'cmd' }));
             viewSubMenu.append(new gui.MenuItem({ label: 'Zoom Out',click:function(){ self.zoomClick(-1); },key:"-",modifiers:'cmd' }));
@@ -122,6 +121,7 @@ var MainApp = function(){
             }
 
             win.menu = mb;
+            this.updateRecentFileMenu();
         break;
 
         case 'win32': //Windows
@@ -197,6 +197,9 @@ MainApp.prototype.closeWindow = function(win){
     global.windows = global.windows.filter(function(item){
         return item.win.id !== win.win.id;
     });
+    if(win.currentPath){
+        this.addRecentFile(win.currentPath);
+    }
     win.modified = false;
     win.win.close(true);
     if(global.windows.length > 0){
@@ -204,6 +207,64 @@ MainApp.prototype.closeWindow = function(win){
     }else{
         global.focused = false;
     }
+}
+
+//returns array of recent files from localStorage
+MainApp.prototype.loadRecentFiles = function(){
+    var recentFiles;
+    try {
+        recentFiles = JSON.parse(global.localStorage.recentFiles || '[]');
+    }catch(e){
+        recentFiles = [];
+    }
+    return recentFiles;
+}
+
+//takes array of files and saves it in localStorage
+MainApp.prototype.saveRecentFiles = function(files){
+    global.localStorage.recentFiles = JSON.stringify(files);
+}
+
+MainApp.prototype.addRecentFile = function(file){
+    var recentFiles = this.loadRecentFiles();
+    var fileIdx = recentFiles.indexOf(file);
+    if(fileIdx != -1){
+        recentFiles.splice(fileIdx,1);
+    }
+    recentFiles.unshift(file);
+    if(recentFiles.length > 10){
+        recentFiles = recentFiles.splice(0,10);
+    }
+    this.saveRecentFiles(recentFiles);
+    this.updateRecentFileMenu();
+}
+
+MainApp.prototype.clearRecentFiles = function(){
+    this.saveRecentFiles([]);
+    this.updateRecentFileMenu();
+}
+
+MainApp.prototype.updateRecentFileMenu = function(){
+    var self = this;
+    var recentFiles = this.loadRecentFiles();
+
+    var recentFilesMenu = new gui.Menu();
+    if(recentFiles.length > 0){
+        recentFiles.forEach(function(file,idx){
+            recentFilesMenu.append(new gui.MenuItem({ label: (idx+1)+': '+file,click:function(){self.openFilePath(file);} }));
+        });
+    }else{
+        recentFilesMenu.append(new gui.MenuItem({ label: 'Empty', enabled: false }));
+    }
+    recentFilesMenu.append(new gui.MenuItem({ type: 'separator' }));
+    recentFilesMenu.append(new gui.MenuItem({ label: 'Clear History',click:function(){ self.clearRecentFiles(); } }));
+
+    //create new menu or update existing menu
+    if(this.win.menu.items[1].submenu.items[2].label == 'Open Recent'){
+        this.win.menu.items[1].submenu.items[2].submenu=recentFilesMenu;
+    }else{
+        this.win.menu.items[1].submenu.insert(new gui.MenuItem({ label: 'Open Recent',submenu:recentFilesMenu}),2);
+    };
 }
 
 MainApp.prototype.addFileToQueue = function(file){
@@ -240,9 +301,17 @@ MainApp.prototype.openClick = function(){
 };
 
 MainApp.prototype.doOpenFile = function(content,path){
-    global.openPath=path;
-    global.openContent=content;
-    this.newClick();
+    var self = this;
+    fs.exists(path,function(exists){
+        if(exists){
+            global.openPath=path;
+            global.openContent=content;
+            self.newClick();
+        }else{
+            alert('Unable to open file. File does not exist.\r\n'+path);
+        }
+
+    })
 }
 
 MainApp.prototype.newClick = function(){
@@ -252,7 +321,7 @@ MainApp.prototype.newClick = function(){
         "frame":true,
         "width": 800,
         "height": 600
-      };
+    };
 
     if(global.focused && global.focused.win){
         options.x = global.focused.win.x+20;
@@ -304,7 +373,7 @@ MainApp.prototype.checkRegistration = function(code){
 MainApp.prototype.register = function(code){
     if(this.checkRegistration(code)){
         global.localStorage.registrationCode=code;
-        if(this.regSubMenu){
+        if(this.win.menu.items[6].label=="REGISTER"){
             this.win.menu.removeAt(6);
         }
         return true;
