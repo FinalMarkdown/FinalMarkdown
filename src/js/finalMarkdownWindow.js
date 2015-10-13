@@ -1,6 +1,9 @@
+var gui = require('nw.gui');
+//for debugging...
+// gui.Window.get().showDevTools();
+
 var fs = require('fs');
 var path = require('path');
-var gui = require('nw.gui');
 var fdialogs = require('node-webkit-fdialogs');
 
 var FinalMarkdown = function(){

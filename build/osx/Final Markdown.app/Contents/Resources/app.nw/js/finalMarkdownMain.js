@@ -1,6 +1,10 @@
+var gui = require('nw.gui');
+
+//for debugging...
+gui.Window.get().showDevTools();
+
 var fs = require('fs');
 var path = require('path');
-var gui = require('nw.gui');
 var pack = require('./package.json');
 var fdialogs = require('node-webkit-fdialogs');
 var uuid = require('uuid-v4');
@@ -28,23 +32,10 @@ var MainApp = function(){
     if(!global.localStorage.uuid) global.localStorage.uuid = uuid();
     this.donateUrl = "http://finalmarkdown.github.io/register.html?r="+global.localStorage.uuid;
 
-
-
     var self = this;
     var win = gui.Window.get();
     this.win = win;
     var loadingDots;
-
-    this.win.on('window_closed',function(data){
-        console.log('window closed!!',data);
-        if(data.win.currentPath){
-            self.addRecentFile(data.win.currentPath);
-        }
-    })
-
-    //FOR DEBUGGING
-    win.showDevTools();
-    // console.dir(win)
 
     win.title="Final Markdown";
     win.setShowInTaskbar(true);
@@ -206,7 +197,6 @@ MainApp.prototype.closeWindow = function(win){
     global.windows = global.windows.filter(function(item){
         return item.win.id !== win.win.id;
     });
-    // this.win.emit('window_closed',{win:win});
     if(win.currentPath){
         this.addRecentFile(win.currentPath);
     }

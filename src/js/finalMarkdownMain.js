@@ -1,6 +1,9 @@
+var gui = require('nw.gui');
+//for debugging...
+// gui.Window.get().showDevTools();
+
 var fs = require('fs');
 var path = require('path');
-var gui = require('nw.gui');
 var pack = require('./package.json');
 var fdialogs = require('node-webkit-fdialogs');
 var uuid = require('uuid-v4');
@@ -32,10 +35,6 @@ var MainApp = function(){
     var win = gui.Window.get();
     this.win = win;
     var loadingDots;
-
-    //FOR DEBUGGING
-    // win.showDevTools();
-    // console.dir(win)
 
     win.title="Final Markdown";
     win.setShowInTaskbar(true);
