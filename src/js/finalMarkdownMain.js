@@ -1,6 +1,6 @@
 var gui = require('nw.gui');
 //for debugging...
-// gui.Window.get().showDevTools();
+gui.Window.get().showDevTools();
 
 var fs = require('fs');
 var path = require('path');
@@ -28,6 +28,7 @@ var MainApp = function(){
     this.fileOpenQueue=[];
     this.windowsLoading = 0;
     this.blockQueue=false;
+
     if(!global.localStorage.uuid) global.localStorage.uuid = uuid();
     this.donateUrl = "http://finalmarkdown.github.io/register.html?r="+global.localStorage.uuid;
 
@@ -45,88 +46,20 @@ var MainApp = function(){
         }
     })
 
-    //build menu for mac
+    //process platform specific operations
     switch(process.platform){
-
         case 'darwin': //OSX
-            var mb = new gui.Menu({type:"menubar",label:"Final Markdown"});
-
-            mb.createMacBuiltin("Final Markdown");
-
-            var fileSubMenu = new gui.Menu();
-            fileSubMenu.append(new gui.MenuItem({ label: 'New',click:self.newClick,key:"n",modifiers:'cmd' }));
-            fileSubMenu.append(new gui.MenuItem({ label: 'Open',click:self.openClick,key:"o",modifiers:'cmd' }));
-            fileSubMenu.append(new gui.MenuItem({ label: 'Save',click:self.saveClick,key:"s",modifiers:'cmd' }));
-            fileSubMenu.append(new gui.MenuItem({ label: 'Save a copy',key:"s",click:self.saveCopyClick,modifiers:'cmd-shift' }));
-
-            var findSubMenu = new gui.Menu();
-            findSubMenu.append(new gui.MenuItem({ label: 'Find...',click:self.toggleFind,key:"f",modifiers:'cmd' }));
-            findSubMenu.append(new gui.MenuItem({ label: 'Find Next',click:self.findNext,key:"g",modifiers:'cmd' }));
-            findSubMenu.append(new gui.MenuItem({ label: 'Find Previous',click:self.findPrevious,key:"g",modifiers:'cmd-shift' }));
-
-            var formatSubMenu = new gui.Menu();
-            formatSubMenu.append(new gui.MenuItem({ label: 'Bold',click:function(){ self.formatTextClick('bold'); },key:"b",modifiers:'cmd' }));
-            formatSubMenu.append(new gui.MenuItem({ label: 'Italic',click:function(){ self.formatTextClick('italic'); },key:"i",modifiers:'cmd' }));
-            formatSubMenu.append(new gui.MenuItem({ label: 'Strikethrough',click:function(){ self.formatTextClick('strike'); },key:"u",modifiers:'cmd' }));
-            formatSubMenu.append(new gui.MenuItem({ label: 'Inline Code',click:function(){ self.formatTextClick('code'); },key:"k",modifiers:'cmd' }));
-            formatSubMenu.append(new gui.MenuItem({ type: 'separator' }));
-            formatSubMenu.append(new gui.MenuItem({ label: 'Link',click:function(){ self.formatTextClick('link'); },key:"l",modifiers:'shift-ctrl' }));
-            formatSubMenu.append(new gui.MenuItem({ label: 'Image',click:function(){ self.formatTextClick('image'); },key:"i",modifiers:'shift-ctrl' }));
-            formatSubMenu.append(new gui.MenuItem({ type: 'separator' }));
-            formatSubMenu.append(new gui.MenuItem({ label: 'Header 1',click:function(){ self.headerClick(1); },key:"1",modifiers:'cmd' }));
-            formatSubMenu.append(new gui.MenuItem({ label: 'Header 2',click:function(){ self.headerClick(2); },key:"2",modifiers:'cmd' }));
-            formatSubMenu.append(new gui.MenuItem({ label: 'Header 3',click:function(){ self.headerClick(3); },key:"3",modifiers:'cmd' }));
-            formatSubMenu.append(new gui.MenuItem({ label: 'Header 4',click:function(){ self.headerClick(4); },key:"4",modifiers:'cmd' }));
-            formatSubMenu.append(new gui.MenuItem({ label: 'Header 5',click:function(){ self.headerClick(5); },key:"5",modifiers:'cmd' }));
-
-            var viewSubMenu = new gui.Menu();
-            viewSubMenu.append(new gui.MenuItem({ label: 'Toggle Preview',click:function(){ self.viewClick('preview'); },key:"p",modifiers:'cmd' }));
-            viewSubMenu.append(new gui.MenuItem({ label: 'Toggle Editor',click:function(){ self.viewClick('editor'); },key:"p",modifiers:'shift-cmd' }));
-            viewSubMenu.append(new gui.MenuItem({ label: 'Presentation Mode',click:function(){ self.viewClick('presentation'); },key:String.fromCharCode(13),modifiers:'cmd' }));
-            viewSubMenu.append(new gui.MenuItem({ type: 'separator' }));
-            viewSubMenu.append(new gui.MenuItem({ label: 'Zoom In',click:function(){ self.zoomClick(1); },key:"+",modifiers:'cmd' }));
-            viewSubMenu.append(new gui.MenuItem({ label: 'Zoom Out',click:function(){ self.zoomClick(-1); },key:"-",modifiers:'cmd' }));
-            viewSubMenu.append(new gui.MenuItem({ label: 'Reset Zoom',click:function(){ self.zoomClick(0); },key:"0",modifiers:'cmd' }));
-            // viewSubMenu.append(new gui.MenuItem({ type: 'separator' }));
-            // viewSubMenu.append(new gui.MenuItem({ label: 'Reload View',click:function(){ self.reload(); },key:"r",modifiers:'cmd' }));
-
-            //add preferences menu and divider
-            // mb.items[0].submenu.insert(new gui.MenuItem({ label: 'Preferences',click:function(){ alert('ok'); }}),1);
-            // mb.items[0].submenu.insert(new gui.MenuItem({ type: 'separator' }),1);
-
-            mb.insert(new gui.MenuItem({ label:'File', submenu: fileSubMenu}),1);
-            mb.insert(new gui.MenuItem({ label:'Format', submenu: formatSubMenu}),3);
-            mb.insert(new gui.MenuItem({ label:'Find', submenu: findSubMenu}),3);
-            mb.insert(new gui.MenuItem({ label:'View', submenu: viewSubMenu}),3);
-
-            if(!self.isRegistered()){
-                var regSubMenu = new gui.Menu();
-                regSubMenu.append(new gui.MenuItem({ label: 'UNREGISTERED COPY' }));
-                regSubMenu.append(new gui.MenuItem({ type: 'separator' }));
-                regSubMenu.append(new gui.MenuItem({ label: "Register",click:function(){ gui.Shell.openExternal(global.papa.donateUrl); } }));
-                regSubMenu.append(new gui.MenuItem({ label: 'Enter Code',click:function(){
-                    var enteredCode = prompt("Enter registration code (get a code by donating using the donate menu item):")
-                    if(!enteredCode){
-                        //Do Nothing -- They hit cancel or left the text blank.
-                    }else if(self.register(enteredCode)){
-                        alert('Thank you for registering.')
-                    }else{
-                        alert('Invalid registration code.')
-                    }
-                } }));
-
-                mb.insert(new gui.MenuItem({ label:'REGISTER', submenu: regSubMenu}),6);
-                self.regSubMenu = regSubMenu;
-            }
-
-            win.menu = mb;
-            this.updateRecentFileMenu();
+            this.isMac = true;
+            //build menu for mac
+            this.win.menu = this.createMenu();
         break;
 
         case 'win32': //Windows
+            this.isWin = true;
         break;
 
         default: //all other *nix
+            this.isLinux = true;
         break;
     }
 
@@ -183,6 +116,88 @@ var MainApp = function(){
 
 };
 
+//create standard window menu
+//returns created menu
+MainApp.prototype.createMenu = function(){
+    var self = this;
+    var modifierKey = this.isMac ? 'cmd' : 'ctrl';
+
+    var fileSubMenu = new gui.Menu();
+    fileSubMenu.append(new gui.MenuItem({ label: 'New',click:self.newClick,key:"n",modifiers:modifierKey }));
+    fileSubMenu.append(new gui.MenuItem({ label: 'Open',click:self.openClick,key:"o",modifiers:modifierKey }));
+    fileSubMenu.append(new gui.MenuItem({ label: 'Save',click:self.saveClick,key:"s",modifiers:modifierKey }));
+    fileSubMenu.append(new gui.MenuItem({ label: 'Save a copy',key:"s",click:self.saveCopyClick,modifiers:modifierKey+'-shift' }));
+
+    var findSubMenu = new gui.Menu();
+    findSubMenu.append(new gui.MenuItem({ label: 'Find...',click:self.toggleFind,key:"f",modifiers:modifierKey }));
+    findSubMenu.append(new gui.MenuItem({ label: 'Find Next',click:self.findNext,key:"g",modifiers:modifierKey }));
+    findSubMenu.append(new gui.MenuItem({ label: 'Find Previous',click:self.findPrevious,key:"g",modifiers:modifierKey+'-shift' }));
+
+    var formatSubMenu = new gui.Menu();
+    formatSubMenu.append(new gui.MenuItem({ label: 'Bold',click:function(){ self.formatTextClick('bold'); },key:"b",modifiers:modifierKey }));
+    formatSubMenu.append(new gui.MenuItem({ label: 'Italic',click:function(){ self.formatTextClick('italic'); },key:"i",modifiers:modifierKey }));
+    formatSubMenu.append(new gui.MenuItem({ label: 'Strikethrough',click:function(){ self.formatTextClick('strike'); },key:"u",modifiers:modifierKey }));
+    formatSubMenu.append(new gui.MenuItem({ label: 'Inline Code',click:function(){ self.formatTextClick('code'); },key:"k",modifiers:modifierKey }));
+    formatSubMenu.append(new gui.MenuItem({ type: 'separator' }));
+    formatSubMenu.append(new gui.MenuItem({ label: 'Link',click:function(){ self.formatTextClick('link'); },key:"l",modifiers:'shift-ctrl' }));
+    formatSubMenu.append(new gui.MenuItem({ label: 'Image',click:function(){ self.formatTextClick('image'); },key:"i",modifiers:'shift-ctrl' }));
+    formatSubMenu.append(new gui.MenuItem({ type: 'separator' }));
+    formatSubMenu.append(new gui.MenuItem({ label: 'Header 1',click:function(){ self.headerClick(1); },key:"1",modifiers:modifierKey }));
+    formatSubMenu.append(new gui.MenuItem({ label: 'Header 2',click:function(){ self.headerClick(2); },key:"2",modifiers:modifierKey }));
+    formatSubMenu.append(new gui.MenuItem({ label: 'Header 3',click:function(){ self.headerClick(3); },key:"3",modifiers:modifierKey }));
+    formatSubMenu.append(new gui.MenuItem({ label: 'Header 4',click:function(){ self.headerClick(4); },key:"4",modifiers:modifierKey }));
+    formatSubMenu.append(new gui.MenuItem({ label: 'Header 5',click:function(){ self.headerClick(5); },key:"5",modifiers:modifierKey }));
+
+    var viewSubMenu = new gui.Menu();
+    viewSubMenu.append(new gui.MenuItem({ label: 'Toggle Preview',click:function(){ self.viewClick('preview'); },key:"p",modifiers:modifierKey }));
+    viewSubMenu.append(new gui.MenuItem({ label: 'Toggle Editor',click:function(){ self.viewClick('editor'); },key:"p",modifiers:'shift-'+modifierKey }));
+    viewSubMenu.append(new gui.MenuItem({ label: 'Presentation Mode',click:function(){ self.viewClick('presentation'); },key:String.fromCharCode(13),modifiers:modifierKey }));
+    viewSubMenu.append(new gui.MenuItem({ type: 'separator' }));
+    viewSubMenu.append(new gui.MenuItem({ label: 'Zoom In',click:function(){ self.zoomClick(1); },key:"+",modifiers:modifierKey }));
+    viewSubMenu.append(new gui.MenuItem({ label: 'Zoom Out',click:function(){ self.zoomClick(-1); },key:"-",modifiers:modifierKey }));
+    viewSubMenu.append(new gui.MenuItem({ label: 'Reset Zoom',click:function(){ self.zoomClick(0); },key:"0",modifiers:modifierKey }));
+    // viewSubMenu.append(new gui.MenuItem({ type: 'separator' }));
+    // viewSubMenu.append(new gui.MenuItem({ label: 'Reload View',click:function(){ self.reload(); },key:"r",modifiers:modifierKey }));
+
+    //add preferences menu and divider
+    // mb.items[0].submenu.insert(new gui.MenuItem({ label: 'Preferences',click:function(){ alert('ok'); }}),1);
+    // mb.items[0].submenu.insert(new gui.MenuItem({ type: 'separator' }),1);
+
+
+    var mb = new gui.Menu({type:"menubar",label:"Final Markdown"});
+    if(this.isMac){
+        mb.createMacBuiltin("Final Markdown");
+    }else{
+        var finalMarkdownSubMenu = new gui.Menu();
+        finalMarkdownSubMenu.append(new gui.MenuItem({ label: 'About'}));
+        mb.append(new gui.MenuItem({ label:'Final Markdown', submenu: finalMarkdownSubMenu}));
+        var editSubMenu = new gui.Menu();
+        editSubMenu.append(new gui.MenuItem({ label: 'Undo'}));
+        editSubMenu.append(new gui.MenuItem({ label: 'Redo'}));
+        mb.insert(new gui.MenuItem({ label:'Edit', submenu: editSubMenu}));
+        var windowSubMenu = new gui.Menu();
+        windowSubMenu.append(new gui.MenuItem({ label: 'Minimize'}));
+        windowSubMenu.append(new gui.MenuItem({ label: 'Close All'}));
+        mb.insert(new gui.MenuItem({ label:'Window', submenu: windowSubMenu}));
+    }
+
+    mb.insert(new gui.MenuItem({ label:'File', submenu: fileSubMenu}),1);
+    mb.insert(new gui.MenuItem({ label:'Format', submenu: formatSubMenu}),3);
+    mb.insert(new gui.MenuItem({ label:'Find', submenu: findSubMenu}),3);
+    mb.insert(new gui.MenuItem({ label:'View', submenu: viewSubMenu}),3);
+
+    if(!self.isRegistered()){
+        var regSubMenu = new gui.Menu();
+        regSubMenu.append(new gui.MenuItem({ label: 'UNREGISTERED COPY' }));
+        regSubMenu.append(new gui.MenuItem({ type: 'separator' }));
+        regSubMenu.append(new gui.MenuItem({ label: "Register",click:function(){ gui.Shell.openExternal(global.papa.donateUrl); } }));
+        regSubMenu.append(new gui.MenuItem({ label: 'Enter Code',click: self.registerPrompt }));
+        mb.insert(new gui.MenuItem({ label:'REGISTER', submenu: regSubMenu}),6);
+    }
+
+    this.updateRecentFileMenu(mb);
+    return mb;
+}
 
 MainApp.prototype.windowLoaded = function(win){
     this.windowsLoading--;
@@ -243,7 +258,7 @@ MainApp.prototype.clearRecentFiles = function(){
     this.updateRecentFileMenu();
 }
 
-MainApp.prototype.updateRecentFileMenu = function(){
+MainApp.prototype.updateRecentFileMenu = function(targetMenu){
     var self = this;
     var recentFiles = this.loadRecentFiles();
 
@@ -258,13 +273,32 @@ MainApp.prototype.updateRecentFileMenu = function(){
     recentFilesMenu.append(new gui.MenuItem({ type: 'separator' }));
     recentFilesMenu.append(new gui.MenuItem({ label: 'Clear History',click:function(){ self.clearRecentFiles(); } }));
 
-    //create new menu or update existing menu
-    if(this.win.menu.items[1].submenu.items[2].label == 'Open Recent'){
-        this.win.menu.items[1].submenu.items[2].submenu=recentFilesMenu;
-    }else{
-        this.win.menu.items[1].submenu.insert(new gui.MenuItem({ label: 'Open Recent',submenu:recentFilesMenu}),2);
-    };
+    this.eachMenu(function(menu){
+        //create new menu or update existing menu
+        if(menu.items[1].submenu.items[2].label == 'Open Recent'){
+            menu.items[1].submenu.items[2].submenu=recentFilesMenu;
+        }else{
+            menu.items[1].submenu.insert(new gui.MenuItem({ label: 'Open Recent',submenu:recentFilesMenu}),2);
+        };
+    }, targetMenu);
 }
+
+MainApp.prototype.eachMenu = function(iterator,targetMenu){
+    var menus = [];
+    if(targetMenu){
+        menus = [targetMenu];
+    } else {
+        if(this.isMac){
+            menus = [this.win.menu];
+        }else{
+            menus = this.windows.map(function(item){
+                return item.win.menu;
+            });
+        }
+    }
+    console.log('menus',menus);
+    menus.forEach(iterator);
+};
 
 MainApp.prototype.addFileToQueue = function(file){
     this.fileOpenQueue.push(file);
@@ -372,13 +406,26 @@ MainApp.prototype.checkRegistration = function(code){
 MainApp.prototype.register = function(code){
     if(this.checkRegistration(code)){
         global.localStorage.registrationCode=code;
-        if(this.win.menu.items[6].label=="REGISTER"){
-            this.win.menu.removeAt(6);
-        }
+        this.eachMenu(function(menu){
+            if(menu.items[6].label=="REGISTER"){
+                menu.removeAt(6);
+            }
+        });
         return true;
     }else{
         global.localStorage.registrationCode=false;
         return false;
+    }
+}
+
+MainApp.prototype.registerPrompt = function(){
+    var enteredCode = prompt("Enter registration code (get a code by donating using the donate menu item):")
+    if(!enteredCode){
+        //Do Nothing -- They hit cancel or left the text blank.
+    }else if(this.register(enteredCode)){
+        alert('Thank you for registering.')
+    }else{
+        alert('Invalid registration code.')
     }
 }
 

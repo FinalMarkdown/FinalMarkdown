@@ -19,6 +19,11 @@ var FinalMarkdown = function(){
 
     var self = this;
 
+    //in non-mac land windows have their own menus
+    if(!global.papa.isMac){
+        this.win.menu = global.papa.createMenu();
+    }
+
     var getThisPartyStarted = function(event){
         self.input = document.querySelector('.mdInput');
         self.output = document.querySelector('.mdOutput');

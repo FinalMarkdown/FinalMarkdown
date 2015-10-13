@@ -1,6 +1,6 @@
 var gui = require('nw.gui');
 //for debugging...
-gui.Window.get().showDevTools();
+// gui.Window.get().showDevTools();
 
 var fs = require('fs');
 var path = require('path');
@@ -18,6 +18,11 @@ var FinalMarkdown = function(){
     // console.dir(this.win);
 
     var self = this;
+
+    //in non-mac land windows have their own menus
+    if(!global.papa.isMac){
+        this.win.menu = global.papa.createMenu();
+    }
 
     var getThisPartyStarted = function(event){
         self.input = document.querySelector('.mdInput');
