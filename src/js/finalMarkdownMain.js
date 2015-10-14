@@ -44,7 +44,7 @@ var MainApp = function(){
         if(global.windows.length < 1){
            self.newClick();
         }
-    })
+    });
 
     //process platform specific operations
     switch(process.platform){
@@ -427,7 +427,7 @@ MainApp.prototype.registerPrompt = function(){
     var enteredCode = prompt("Enter registration code (get a code by donating using the donate menu item):")
     if(!enteredCode){
         //Do Nothing -- They hit cancel or left the text blank.
-    }else if(this.register(enteredCode)){
+    }else if(global.papa.register(enteredCode)){
         alert('Thank you for registering.')
     }else{
         alert('Invalid registration code.')

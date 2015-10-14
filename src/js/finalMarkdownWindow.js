@@ -478,7 +478,7 @@ FinalMarkdown.prototype.findNext = function() {
 }
 
 FinalMarkdown.prototype.execCommand = function(cmd) {
-    return document.execCommand(cmd);
+    return document.execCommand(cmd, '', null);
 }
 
 FinalMarkdown.prototype.findPrevious = function() {
