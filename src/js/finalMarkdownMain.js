@@ -1,6 +1,6 @@
 var gui = require('nw.gui');
 //for debugging...
-gui.Window.get().showDevTools();
+// gui.Window.get().showDevTools();
 
 var fs = require('fs');
 var path = require('path');
@@ -51,7 +51,6 @@ var MainApp = function(){
         case 'darwin': //OSX
             this.isMac = true;
             //build menu for mac
-            this.win.menu = this.createMenu();
         break;
 
         case 'win32': //Windows
@@ -61,6 +60,7 @@ var MainApp = function(){
         default: //all other *nix
             this.isLinux = true;
         break;
+            this.win.menu = this.createMenu();
     }
 
     function startLoading(){
@@ -170,15 +170,18 @@ MainApp.prototype.createMenu = function(){
     }else{
         var finalMarkdownSubMenu = new gui.Menu();
         finalMarkdownSubMenu.append(new gui.MenuItem({ label: 'About'}));
-        mb.append(new gui.MenuItem({ label:'Final Markdown', submenu: finalMarkdownSubMenu}));
         var editSubMenu = new gui.Menu();
-        editSubMenu.append(new gui.MenuItem({ label: 'Undo'}));
-        editSubMenu.append(new gui.MenuItem({ label: 'Redo'}));
-        mb.insert(new gui.MenuItem({ label:'Edit', submenu: editSubMenu}));
+        editSubMenu.append(new gui.MenuItem({ label: 'Undo', click:function(){ self.execCommand("undo"); } }));
+        editSubMenu.append(new gui.MenuItem({ label: 'Redo', click:function(){ self.execCommand("redo"); } }));
+        editSubMenu.append(new gui.MenuItem({ label: 'Copy', click:function(){ self.execCommand("copy"); } }));
+        editSubMenu.append(new gui.MenuItem({ label: 'Cut', click:function(){ self.execCommand("cut"); } }));
+        editSubMenu.append(new gui.MenuItem({ label: 'Paste', click:function(){ self.execCommand("paste"); } }));
         var windowSubMenu = new gui.Menu();
         windowSubMenu.append(new gui.MenuItem({ label: 'Minimize'}));
         windowSubMenu.append(new gui.MenuItem({ label: 'Close All'}));
-        mb.insert(new gui.MenuItem({ label:'Window', submenu: windowSubMenu}));
+        mb.append(new gui.MenuItem({ label:'Final Markdown', submenu: finalMarkdownSubMenu}));
+        mb.append(new gui.MenuItem({ label:'Edit', submenu: editSubMenu}));
+        mb.append(new gui.MenuItem({ label:'Window', submenu: windowSubMenu}));
     }
 
     mb.insert(new gui.MenuItem({ label:'File', submenu: fileSubMenu}),1);
@@ -198,6 +201,8 @@ MainApp.prototype.createMenu = function(){
     this.updateRecentFileMenu(mb);
     return mb;
 }
+
+
 
 MainApp.prototype.windowLoaded = function(win){
     this.windowsLoading--;
@@ -291,7 +296,7 @@ MainApp.prototype.eachMenu = function(iterator,targetMenu){
         if(this.isMac){
             menus = [this.win.menu];
         }else{
-            menus = this.windows.map(function(item){
+            menus = global.windows.map(function(item){
                 return item.win.menu;
             });
         }
@@ -439,6 +444,10 @@ MainApp.prototype.findNext = function() {
 
 MainApp.prototype.findPrevious = function() {
     if(global.focused && global.focused.findPrevious) return global.focused.findPrevious();
+}
+
+MainApp.prototype.execCommand = function(cmd){
+    if(global.focused && global.focused.execCommand) return global.focused.execCommand(cmd);
 }
 
 MainApp.prototype.reload = function() {

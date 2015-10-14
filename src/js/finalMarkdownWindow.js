@@ -477,6 +477,10 @@ FinalMarkdown.prototype.findNext = function() {
     });
 }
 
+FinalMarkdown.prototype.execCommand = function(cmd) {
+    return document.execCommand(cmd);
+}
+
 FinalMarkdown.prototype.findPrevious = function() {
     this.editor.findPrevious();
 }
